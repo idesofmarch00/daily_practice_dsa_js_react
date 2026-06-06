@@ -6,12 +6,13 @@ export type ProblemMeta = {
   id: string;
   title: string;
   prompt: string;
+  explanation?: { line: string; desc: string }[];
 };
 
 export type ConsoleProblem = ProblemMeta & {
   type: "dsa" | "js";
   source: string;
-  run: () => string;
+  run: () => string | Promise<string>;
 };
 
 export type ReactProblem = ProblemMeta & {

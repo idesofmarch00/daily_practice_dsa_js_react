@@ -337,3 +337,104 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 }
+
+/* Collapsible explanation accordion */
+.explanation-details {
+  border: 1px solid #dde3d6;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(40, 54, 47, 0.06);
+  margin-top: 24px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.explanation-details[open] {
+  border-color: #cfe4d5;
+}
+
+.explanation-summary {
+  background: #e8f3ec;
+  color: #1d6b43;
+  padding: 16px 20px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  list-style: none; /* Hide default triangle */
+}
+
+.explanation-summary::-webkit-details-marker {
+  display: none; /* Hide default triangle in Safari */
+}
+
+.explanation-summary::after {
+  content: "↓";
+  font-size: 1.1rem;
+  transition: transform 0.3s/ease;
+}
+
+.explanation-details[open] .explanation-summary::after {
+  transform: rotate(180deg);
+}
+
+.explanation-summary:hover {
+  background: #dfede3;
+}
+
+.explanation-content {
+  padding: 24px;
+  border-top: 1px solid #cfe4d5;
+  background: #fafbfa;
+  color: #2e3b33;
+  line-height: 1.6;
+}
+
+.explanation-content h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  color: #18201c;
+}
+
+.explanation-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.explanation-table th,
+.explanation-table td {
+  padding: 12px;
+  border-bottom: 1px solid #edf0e8;
+  text-align: left;
+  vertical-align: top;
+}
+
+.explanation-table th {
+  background: #f2f5ed;
+  font-weight: 700;
+  color: #4a5c51;
+  font-size: 0.85rem;
+}
+
+.explanation-table tr:last-child td {
+  border-bottom: none;
+}
+
+.explanation-code-cell {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.85rem;
+  color: #1d6b43;
+  background: #f0f4f1;
+  padding: 6px 10px !important;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.explanation-desc-cell {
+  font-size: 0.95rem;
+  color: #3e4a41;
+}

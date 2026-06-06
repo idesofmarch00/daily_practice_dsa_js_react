@@ -118,6 +118,33 @@ function ProblemPage() {
         <h2>Solution Source</h2>
         <CodeBlock code={problem.source} />
       </section>
+
+      {problem.explanation && problem.explanation.length > 0 && (
+        <details className="explanation-details">
+          <summary className="explanation-summary">
+            <span>Line-by-Line Code Explanation</span>
+          </summary>
+          <div className="explanation-content">
+            <h3>How it works & Syntax Breakdown</h3>
+            <table className="explanation-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "40%" }}>Code Syntax</th>
+                  <th style={{ width: "60%" }}>Explanation / Rationale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {problem.explanation.map((item, idx) => (
+                  <tr key={idx}>
+                    <td className="explanation-code-cell">{item.line}</td>
+                    <td className="explanation-desc-cell">{item.desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      )}
     </section>
   );
 }

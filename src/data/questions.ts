@@ -8,7 +8,7 @@ import type {
 
 type ConsoleModule = {
   meta: ProblemMeta;
-  run: () => string;
+  run: () => string | Promise<string>;
 };
 
 type ReactModule = {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import type { ConsoleProblem } from "../types";
 
 type TerminalOutputProps = {
@@ -6,13 +6,32 @@ type TerminalOutputProps = {
 };
 
 export function TerminalOutput({ problem }: TerminalOutputProps) {
-  const output = useMemo(() => problem.run(), [problem]);
+  const [output, setOutput] = useState<string>("Running...");
 
   useEffect(() => {
-    console.group(problem.title);
-    console.log(output);
-    console.groupEnd();
-  }, [output, problem.title]);
+    let active = true;
+    const result = problem.run();
+
+    if (result instanceof Promise) {
+      result.then((res) => {
+        if (active) {
+          setOutput(res);
+          console.group(problem.title);
+          console.log(res);
+          console.groupEnd();
+        }
+      });
+    } else {
+      setOutput(result);
+      console.group(problem.title);
+      console.log(result);
+      console.groupEnd();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [problem]);
 
   return (
     <section className="panel">
