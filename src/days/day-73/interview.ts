@@ -486,5 +486,92 @@ If you are using Expo, you rarely need to touch native iOS or Android project fi
   }
 }
 \`\`\``
+  },
+  {
+    question: "Babel vs. Metro and Managing Native Versions (JDK, SDK, Pods)",
+    answer: `To make it easy to understand, think of the build process as an assembly line inside a factory.
+Metro is the factory manager overseeing the entire assembly line. Babel is a specialized worker on that assembly line who only handles rewriting text.
+
+### 🎨 Babel (babel.config.js) vs. 🛠️ Metro (metro.config.js)
+
+**🎨 Babel is the "Code Editor"**
+Babel only cares about the contents inside a single JavaScript or TypeScript file. It reads your modern, human-readable code and translates it so the phone can understand it.
+* **What transformations it does**: It takes new JavaScript features (like \`async/await\`, optional chaining \`?.\`) or React JSX (\`<View>\`) and rewrites them into old, universal JavaScript that mobile engines can execute without crashing.
+* **Obfuscation / Modification**: Babel modifies the code logic itself. If you want to delete all \`console.log\` lines, add custom code injections, or use tools to scramble/obfuscate your variable names so humans cannot read your logic, Babel does this.
+
+**🛠️ Metro is the "Logistics Manager"**
+Metro does not care about individual lines of code; it cares about the bunch of files as a whole. It moves things along the assembly line, hands files to Babel, and packages everything up.
+* **What "Resolving Files" means**: When you write \`import Button from './Button'\`, Metro is the search engine that hunts through your folders to find \`Button.js\`. If you are building for an iPhone, Metro is smart enough to choose \`Button.ios.js\` over \`Button.android.js\`. It also handles non-code assets, like converting an image (\`logo.png\`) or a custom 3D model into an asset path the phone can load.
+* **Minification / Serialization**: Once Babel finishes editing all the individual files, Metro takes those thousands of files, glues them into one massive file (the bundle), and applies Terser to squeeze out all spaces and minify it for production.
+
+### 📋 Summary: Who handles what?
+
+| Task | Who handles it? | Which config file? |
+|---|---|---|
+| Stripping out console.logs | Babel | babel.config.js |
+| Converting TypeScript / JSX to JS | Babel | babel.config.js |
+| Finding where files live (Resolving) | Metro | metro.config.js |
+| Handling SVGs or Fonts | Metro | metro.config.js |
+| Gluing all files together (Bundling) | Metro | metro.config.js |
+| Squishing spaces out of the final bundle | Metro (via Terser) | metro.config.js |
+
+### 📱 Where do you upgrade/downgrade JDK and Native Versions?
+Neither Metro nor Babel touches native systems like the JDK, Android SDK, or iOS versions. If you need to change these versions, you must look inside the native folders (\`/android\` and \`/ios\`).
+*(Note: If you use Expo Go / Expo Prebuild, you change these inside \`app.json\` using Expo plugins. If you use standard React Native, you edit the files below directly).*
+
+**🤖 For Android (JDK, Gradle, SDK Versions)**
+Go to the \`android/\` folder at the root of your project:
+1. **To change the JDK version**: This is tied to your development machine and your Gradle version. You update this inside \`android/gradle/wrapper/gradle-wrapper.properties\` or your local development IDE settings (like Android Studio).
+2. **To change Android SDK, Target, or Compile Versions**: Open \`android/build.gradle\` (or \`android/app/build.gradle\`). Look for:
+   * \`compileSdkVersion\` (tells the compiler which Android version to use).
+   * \`targetSdkVersion\` (tells the App Store which Android system your app is optimized for).
+   * \`minSdkVersion\` (the oldest Android phone your app is allowed to run on).
+
+**🍏 For iOS (Swift, Objective-C, CocoaPods)**
+Go to the \`ios/\` folder at the root of your project:
+1. **To change iOS minimum deployment versions or dependencies**: Open the \`ios/Podfile\`. Near the top, you will see a line like \`platform :ios, '15.1'\`. Changing this number upgrades or downgrades the lowest iPhone iOS software your app supports.`
+  },
+  {
+    question: "What are Source Maps, and how do we securely hide API keys and business logic on the frontend?",
+    answer: `### Part 1: What are Source Maps?
+A source map is a special file (ending in \`.map\`) that maps your minified, bundled production code back to your original, readable source code.
+When you bundle a React app for production, your code turns into a single line of compressed text. If a crash happens, the browser console will point to an error at \`main.js:1:34800\`, which is useless for debugging.
+
+**How They Work**
+If you upload source maps to your server, the browser’s Developer Tools automatically fetch them behind the scenes.
+* **For Users**: They see the fast, optimized, minified version of your site.
+* **For You (in DevTools)**: You see your original, beautifully formatted components, folders, and original line numbers (\`UserProfile.jsx:42\`).
+
+**Production Warning**
+Do not deploy source maps publicly. If you host your \`.map\` files on your public production server, anyone can open DevTools, go to the "Sources" tab, and read your exact, original source code. Instead, configure your bundler (like Vite) to generate source maps, but configure your error tracker (like Sentry) to upload them privately and delete them from the public build folder.
+
+### Part 2: Security & Hiding Secrets from Hackers
+Yes, a hacker can easily see everything on the client side. If code runs in a browser, the user owns that browser and has absolute visibility.
+
+**1. Can a hacker see LocalStorage, Network requests, and API keys sent as headers?**
+* **LocalStorage**: Yes. Anyone can open the browser console, type \`localStorage\`, and read every single key and value in plain text. It is completely public.
+* **Network Tab**: Yes. If your React app makes an API call, it shows up in the browser's "Network" tab. Anyone can click on the request to see the exact URL, the parameters, and every single Request Header (including your bearer tokens or API keys).
+
+**2. How do we hide business logic and API keys if obfuscation is discouraged?**
+Because you cannot truly hide anything inside a browser, you must change *where* the secrets live. You do this using an industry-standard pattern called a **Backend Proxy** or an **API Gateway**.
+Instead of your React app talking directly to a sensitive third-party service, you route the request through your own server.
+
+\`[ React App (Browser) ]\`
+       \`│\`
+       \`│ (1) Sends safe request (No secret keys needed)\`
+       \`▼\`
+\`[ Your Server / Serverless Function ] ── (2) Safely injects the hidden API key from server environment\`
+       \`│\`
+       \`│ (3) Makes the actual request to the protected service\`
+       \`▼\`
+\`[ Third-Party Service (e.g., Stripe, OpenAI) ]\`
+
+**How this solves your problems:**
+* **Hiding API Keys**: Your React app only talks to your server. Your private third-party API keys are stored securely in your server's environment variables (\`.env\`). They never leave the server and are never sent to the browser network tab.
+* **Hiding Business Logic**: If you have a proprietary algorithm, calculation, or pricing logic that competitors shouldn't copy, do not write it in React. Write that specific logic as a backend route (Node.js, Python, Go, or AWS Lambda). React sends the raw data to the server, the server calculates it secretly, and sends back just the final result.
+
+**3. How to handle sensitive user data safely**
+Since LocalStorage is insecure, how do you keep a user logged in safely? Do not store passwords or API keys in LocalStorage.
+* **Use HttpOnly Cookies**: For user authentication, have your backend issue a JWT (JSON Web Token) inside an \`HttpOnly\` cookie. The browser automatically appends this cookie to your backend API headers, but JavaScript cannot read it. This completely protects the token from being stolen by malicious browser extensions or XSS (Cross-Site Scripting) attacks.`
   }
 ];

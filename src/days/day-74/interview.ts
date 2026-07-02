@@ -139,4 +139,341 @@ Here is how a traditional synchronous design compares to an asynchronous Pub/Sub
       "https://testbook.com/interview/mern-stack-interview-questions",
     ],
   },
+  {
+    question: "Explain the architecture of React: the complete flow and libraries used (Transpiler, Bundler, React Core, etc.)",
+    answer: `React's architecture is not just a single library, but an ecosystem of tools working together to render a user interface efficiently. Here is the complete flow of how React works from code to the browser screen.
+
+## 1. The Build Pipeline (Transpilation & Bundling)
+
+Browsers do not understand JSX (React's HTML-in-JS syntax) or modern TypeScript/ES6+ features natively out of the box.
+
+*   **The Transpiler (Babel or SWC):** When you write a React component using JSX, a transpiler like Babel converts that JSX into standard JavaScript function calls (e.g., \`React.createElement()\` or the newer \`jsx()\` runtime). It also transforms modern JavaScript into older syntax for broader browser compatibility.
+*   **The Bundler (Webpack, Vite, Rollup):** An application consists of hundreds of files (JS, CSS, images). The bundler traverses the dependency graph (following your \`import\` statements), bundles them into a few optimized static assets, minifies the code, and provides a development server with Hot Module Replacement (HMR).
+
+## 2. React Core (\`react\`)
+
+This is the platform-agnostic heart of React.
+*   **Component Definition:** It provides the APIs for defining components, Hooks (\`useState\`, \`useEffect\`), and Context.
+*   **Reconciliation & Fiber:** It contains the logic for creating the Virtual DOM (a lightweight JavaScript representation of the actual DOM). When state changes, React Core computes the differences (the "diff") between the new Virtual DOM and the old Virtual DOM.
+*   **React Fiber:** This is the underlying reconciliation algorithm (introduced in React 16). It allows React to pause, abort, or prioritize rendering work. For example, animations or user typing can take precedence over rendering a large list of data.
+
+## 3. The Renderer (\`react-dom\` or \`react-native\`)
+
+React Core figures out *what* changed, but the Renderer figures out *how* to apply those changes to the specific host environment.
+*   **React DOM:** In a web browser environment, \`react-dom\` takes the instructions from React Core and efficiently applies the minimum necessary mutations to the actual Browser DOM (the \`document\` object).
+*   **React Native:** If you were building a mobile app, the React Native renderer would translate those same instructions into native iOS (UIView) or Android (View) UI components.
+
+## The Complete Flow (Start to Finish)
+
+1.  **Authoring:** You write JSX and stateful components in your IDE.
+2.  **Build Step:** Vite/Babel transpiles the JSX to \`jsx()\` calls and bundles your files into a \`main.js\` file.
+3.  **Initialization:** The browser loads \`main.js\`. \`ReactDOM.createRoot().render()\` is called, mounting your app to a generic HTML \`<div id="root">\` element.
+4.  **Initial Render:** React Core builds the initial Virtual DOM tree. React DOM translates it to actual HTML DOM nodes.
+5.  **State Update:** The user clicks a button, triggering \`setState\`.
+6.  **Reconciliation:** React Core (using Fiber) builds a *new* Virtual DOM tree, compares it against the old one, and calculates the exact minimal changes needed.
+7.  **Commit Phase:** React DOM takes that "diff" and updates only the specific elements in the actual Browser DOM that changed, keeping the application fast and responsive.`,
+    citations: [
+      "https://react.dev/learn",
+      "https://github.com/acdlite/react-fiber-architecture",
+      "https://legacy.reactjs.org/docs/faq-internals.html"
+    ],
+  },
+  {
+    question: "Explain the architecture of React Native: the complete lifecycle, core technologies (Metro bundler, JS Engine), and tools required.",
+    answer: `React Native allows you to build native mobile apps using React. Unlike React for the web (which renders to the DOM), React Native renders to actual native UI components (like \`UIView\` on iOS or \`ViewGroup\` on Android).
+
+Here is the complete architecture and lifecycle of a React Native application.
+
+## 1. The Core Architecture (The Three Threads)
+
+A React Native app runs across three primary threads working in parallel:
+
+*   **The UI Thread (Main Thread):** This is the native thread (Java/Kotlin for Android, Objective-C/Swift for iOS). It handles drawing the actual UI elements to the screen and capturing user inputs (touches, swipes).
+*   **The JavaScript Thread:** This is where your React (JavaScript/TypeScript) code runs. It executes the React lifecycle, handles state/props, and processes API calls. It runs inside a JavaScript Engine (historically **JavaScriptCore**, but now **Hermes**).
+*   **The Shadow Thread:** A background thread where React Native calculates the UI layout. It uses a C++ layout engine called **Yoga** to convert Flexbox layouts from your JS code into precise pixel coordinates that the native UI thread can understand.
+
+## 2. The Bridge vs. JSI (The Communication Layer)
+
+How does the JS thread tell the Native UI thread what to draw?
+
+*   **The Old Architecture (The Bridge):** Historically, the JS thread and Native thread communicated by serializing messages into JSON, sending them across an asynchronous "Bridge," and deserializing them on the other side. This was a bottleneck for heavy animations or complex lists.
+*   **The New Architecture (JSI - JavaScript Interface):** React Native recently introduced JSI, a C++ layer that allows the JS thread to hold direct references to native C++ objects and invoke native methods synchronously, completely eliminating the JSON serialization bottleneck. (This also enables the new **Fabric** renderer and **TurboModules**).
+
+## 3. The Build Pipeline & Tooling
+
+*   **Metro Bundler:** React Native's equivalent of Webpack/Vite. Metro takes your hundreds of JavaScript files and dependencies and bundles them into a single \`index.bundle.js\` file. It's heavily optimized for fast startup times and provides Fast Refresh (HMR) during development.
+*   **The JS Engine (Hermes):** Hermes is an open-source JavaScript engine optimized by Meta specifically for React Native. Unlike traditional engines (V8) that parse and compile JS at runtime (JIT), Hermes heavily precompiles your JavaScript into bytecode during the build process (AOT). This results in a smaller app size, lower memory usage, and much faster app launch times.
+*   **Expo vs. React Native CLI:**
+    *   **React Native CLI:** Gives you full control over the native iOS (\`.xcworkspace\`) and Android (\`.gradle\`) projects. You can easily add custom native Java/Swift code.
+    *   **Expo:** A powerful framework/toolchain around React Native. It provides pre-configured over-the-air (OTA) updates, file-based routing (Expo Router), and a suite of high-quality native modules, allowing you to build apps often without ever opening Xcode or Android Studio.
+
+## The Complete Lifecycle (App Launch)
+
+1.  **Launch:** The user taps the app icon. The Native OS launches the app and starts the Native UI Thread.
+2.  **Engine Initialization:** The app initializes the JavaScript engine (Hermes).
+3.  **Bundle Execution:** The JS engine loads and executes the Metro-bundled JavaScript code (\`index.bundle.js\`).
+4.  **Virtual DOM & Yoga:** React calculates the component tree. The Shadow Thread uses Yoga to calculate the exact layout (height, width, X/Y coordinates).
+5.  **Native Rendering:** Through JSI (or the Bridge), instructions are sent to the Native UI Thread to instantiate the actual iOS \`UIView\` or Android \`ViewGroup\` elements.
+6.  **Interaction:** When a user taps a button, the Native UI Thread catches the touch event, sends it to the JS thread, the JS thread updates the state, React re-renders the Virtual DOM, Yoga recalculates layout if needed, and the Native UI thread updates the screen.`,
+    citations: [
+      "https://reactnative.dev/architecture/overview",
+      "https://reactnative.dev/docs/hermes",
+      "https://reactnative.dev/docs/new-architecture-intro"
+    ]
+  },
+  {
+    question: "Describe the complete process of initializing a React Native project (CLI vs. Expo), the required tools/libraries, and explain the generated folder structure and configuration files.",
+    answer: `When starting a React Native project, you have two primary workflows: **Expo** (the recommended, managed approach) and **React Native CLI** (the bare, unmanaged approach).
+
+## 1. Expo Workflow (Recommended)
+Expo abstracts away the complex native tooling, allowing you to build iOS and Android apps writing primarily JavaScript/TypeScript.
+
+*   **Tools Required:** Node.js, Watchman (for efficient file watching), and the Expo Go app on your physical device (or an iOS Simulator / Android Emulator).
+*   **Initialization Command:** \`npx create-expo-app@latest my-app\`
+*   **How it works:** Expo manages the native iOS and Android build environments under the hood. You write React code, and the Expo Bundler serves it directly to the Expo Go client app for rapid development. When building for production, Expo Application Services (EAS) can compile the native binaries in the cloud.
+
+## 2. React Native CLI (Bare Workflow)
+This approach gives you direct access to the underlying native projects (Java/Kotlin and Swift/Obj-C). You must manage the native build environments yourself.
+
+*   **Tools Required (macOS example for iOS/Android):**
+    *   Node.js & Watchman.
+    *   **iOS:** Xcode, CocoaPods (Ruby dependency manager), iOS Simulator.
+    *   **Android:** Java Development Kit (JDK), Android Studio, Android SDK, Android Emulator.
+*   **Initialization Command:** \`npx @react-native-community/cli@latest init MyApp\`
+*   **How it works:** You compile the native iOS (\`.xcworkspace\`) and Android (\`.gradle\`) projects locally on your machine, and Metro bundles your JS code.
+
+---
+
+## 3. Folder Structure & Config Files
+
+Whether you use Expo or the Bare CLI, the resulting folder structure contains several critical configuration files:
+
+### Universal Files (Both Expo & CLI)
+*   **\`package.json\`**: Contains your project's JavaScript dependencies (e.g., \`react\`, \`react-native\`), scripts (e.g., \`start\`, \`test\`), and project metadata.
+*   **\`metro.config.js\`**: The configuration file for the Metro Bundler. You can configure how Metro resolves modules, handles specific file extensions (like SVG imports), or transforms code before bundling.
+*   **\`babel.config.js\`**: Instructs Babel on how to transpile your modern JavaScript/TypeScript and JSX into code the JS Engine (Hermes) can execute.
+*   **\`tsconfig.json\`**: TypeScript compiler configuration, ensuring strict type safety across your React components.
+*   **\`App.tsx\` (or \`index.js\`)**: The entry point of your application where the root React component is mounted to the native views.
+
+### Expo-Specific Files
+*   **\`app.json\`**: The central configuration file for Expo. It defines native app properties like the app's name, bundle identifier (e.g., \`com.company.app\`), icon, splash screen, and required native permissions (camera, location) without needing to touch native code.
+
+### React Native CLI-Specific Files (The Native Directories)
+When using the bare CLI (or if you "prebuild" an Expo app to eject it), you will see these native folders:
+*   **\`/ios/\`**: The native iOS project.
+    *   **\`Podfile\`**: Used by CocoaPods to manage native iOS dependencies (like native Swift/Objective-C libraries your JS relies on).
+    *   **\`MyApp.xcworkspace\`**: The Xcode workspace file used to compile and build the iOS app.
+    *   **\`Info.plist\`**: The iOS configuration file dictating app permissions, icons, and metadata.
+*   **\`/android/\`**: The native Android project.
+    *   **\`build.gradle\`**: Configuration for the Gradle build system (compiles Java/Kotlin and handles native Android dependencies).
+    *   **\`AndroidManifest.xml\`**: Declares app permissions, background services, and core Android metadata.`,
+    citations: [
+      "https://reactnative.dev/docs/environment-setup",
+      "https://docs.expo.dev/",
+      "https://reactnative.dev/docs/understanding-cli"
+    ]
+  },
+  {
+    question: "What are the core differences between React and React Native? Explain the different components, styling, APIs, and setup dependencies.",
+    answer: `While React and React Native share the same core React engine (Component lifecycle, State, Props, Hooks like \`useState\`, \`useEffect\`), their target environments are fundamentally different. React targets the Browser DOM, while React Native targets Native Operating Systems (iOS and Android).
+
+## 1. Components (DOM Elements vs. Native Views)
+In React, you use standard HTML tags. In React Native, HTML does not exist. You must import and use React Native's core components, which the framework translates into native mobile UI elements under the hood.
+
+| Web (React) | Mobile (React Native) | Native Translation (iOS / Android) |
+| --- | --- | --- |
+| \`<div>\` | \`<View>\` | \`UIView\` / \`ViewGroup\` |
+| \`<p>\`, \`<span>\`, \`<h1>\` | \`<Text>\` | \`UITextView\` / \`TextView\` |
+| \`<button>\` | \`<Button>\`, \`<Pressable>\`, \`<TouchableOpacity>\` | \`UIButton\` / \`Button\` |
+| \`<img>\` | \`<Image>\` | \`UIImageView\` / \`ImageView\` |
+| \`<ul>\`, \`<ol>\` | \`<FlatList>\`, \`<SectionList>\`, \`<ScrollView>\` | \`UITableView\` / \`RecyclerView\` |
+| \`<input type="text">\` | \`<TextInput>\` | \`UITextField\` / \`EditText\` |
+
+## 2. Styling (CSS vs. StyleSheet API)
+React uses standard CSS, SCSS, or utility classes like Tailwind. React Native uses JavaScript objects to emulate CSS, primarily via its built-in \`StyleSheet\` API.
+
+*   **No Cascade:** Styles do not cascade deeply in React Native. You cannot write a global rule to style all text. You must apply styles directly to the \`<Text>\` components.
+*   **Flexbox Everywhere:** Everything in React Native uses Flexbox for layout. However, the default \`flexDirection\` is \`column\` (unlike the web's \`row\`), because phone screens are vertical.
+*   **Unitless Dimensions:** You cannot use \`px\`, \`em\`, \`rem\`, \`vh\`, or \`vw\`. Values are usually unitless numbers that represent density-independent pixels.
+
+## 3. Mobile-Specific APIs and Capabilities
+React Native interfaces with device hardware and mobile OS features, which the web either lacks or handles differently via Web APIs.
+
+*   **Device APIs:** React Native requires native modules for things like Push Notifications, Camera, Bluetooth, File System, Haptics, and GPS. You usually access these via the Expo SDK (e.g., \`expo-location\`, \`expo-camera\`).
+*   **Animations:** While the web relies heavily on CSS transitions and keyframes, React Native uses its \`Animated\` API or the highly popular \`react-native-reanimated\` library, which executes animations directly on the UI thread to prevent JavaScript thread lag.
+*   **Navigation:** The web uses URL-based routing (like \`react-router\`). Mobile apps don't have a URL bar. React Native uses stack-based navigation (like pushing and popping screens off a deck of cards or tab bars), primarily handled by the \`React Navigation\` library or \`Expo Router\`.
+
+## 4. Dependencies and Setup
+The tooling and environment setup is vastly different:
+*   **React Setup:** Very lightweight. Usually just Node.js and a bundler (Vite, Next.js). You test it simply by opening \`localhost:3000\` in Google Chrome.
+*   **React Native Setup:** Requires heavy native environments. You need Node.js, Watchman, a Mac (if building for iOS), Xcode for the iOS Simulator, and Android Studio for the Android Emulator. Alternatively, the Expo workflow simplifies this by letting you scan a QR code to test on your physical phone via the Expo Go app.`,
+    citations: [
+      "https://reactnative.dev/docs/components-and-apis",
+      "https://reactnative.dev/docs/style"
+    ]
+  },
+  {
+    question: "Explain how modern UI and animation libraries work in React Native's architecture. How has the ecosystem evolved with Expo, design systems, and tools like Reanimated?",
+    answer: `Historically, building beautiful, performant UIs in React Native was incredibly difficult because animations running on the JavaScript thread would stutter if the app was processing data. Modern tools and architectural changes have completely solved this.
+
+## 1. The Animation Revolution (Reanimated & The UI Thread)
+React Native comes with a built-in \`Animated\` API, but the real game-changer for the ecosystem has been **React Native Reanimated**.
+
+*   **The Problem with JS Animations:** If you run an animation entirely on the JavaScript thread (e.g., calculating a \`padding\` value 60 times a second), it historically had to cross the asynchronous "Bridge" to the Native UI thread for every single frame. If the JS thread was busy fetching an API or parsing JSON, the animation would stutter or drop frames.
+*   **The Reanimated Solution (Worklets):** Reanimated introduces "worklets"—tiny chunks of JavaScript that are compiled and sent *ahead of time* to run directly on a secondary JS context residing on the **Native UI Thread**.
+*   **The Result:** Animations and gesture handling (via \`react-native-gesture-handler\`) run at a buttery smooth 60fps or 120fps, entirely bypassing the React Native Bridge and remaining immune to JS thread blockages.
+
+## 2. Design Systems & Modern Styling Solutions
+React Native's native \`StyleSheet\` API is functional but lacks the rapid developer experience of web tools like Tailwind. The ecosystem has evolved to bridge this gap:
+
+*   **NativeWind:** This library brings **Tailwind CSS** directly to React Native. It uses a Babel plugin to compile Tailwind classes at build time into native \`StyleSheet\` objects. This allows developers to share exact UI components and styling muscle memory between the Web (Next.js) and Mobile.
+*   **Modern UI Compilers (Tamagui):** Tamagui is a revolutionary modern UI kit and styling engine. It writes styles in JS but uses an optimizing compiler to extract them into static CSS on the web and highly flattened, optimized native styles on mobile, achieving massive performance gains over traditional runtime-styled-components.
+*   **Headless UI (Gluestack):** Libraries like Gluestack UI (the successor to NativeBase) provide unstyled, accessible, customizable components (headless UI) that you can easily theme without fighting default styles.
+
+## 3. How Expo Changed the Native UI Game
+Expo has radically transformed how developers interact with native UI modules and native capabilities.
+
+*   **The Pre-Expo Era:** If you needed a complex UI component that required native Swift/Kotlin code (e.g., a native Bottom Sheet, Video Player, Map, or Camera), you had to "eject" from your managed workflow, open Xcode/Android Studio, manually link native libraries, and debug complex build errors.
+*   **Expo Modules API:** Expo introduced a new way to write native modules using modern Swift and Kotlin (instead of legacy Objective-C/Java) with a much simpler, highly typed API.
+*   **Continuous Native Generation (CNG) & Config Plugins:** This is Expo's biggest breakthrough. With Config Plugins, you no longer ever need to touch or commit the \`/ios\` or \`/android\` folders. You define what native permissions or UI capabilities you need in your \`app.json\`. Expo dynamically generates the native iOS/Android code on the fly when you build the app (via EAS). This means you can install complex native UI libraries while staying entirely within a clean, managed JavaScript-only workspace.`,
+    citations: [
+      "https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/glossary#worklet",
+      "https://tamagui.dev/docs/intro/introduction",
+      "https://docs.expo.dev/workflow/continuous-native-generation/"
+    ]
+  },
+  {
+    question: "Explain the difference between React Native's Old Architecture and New Architecture. Detail the improvements across the Bridge, JSI, Fabric, TurboModules, and Codegen.",
+    answer: `React Native recently underwent a massive internal rewrite to eliminate long-standing performance bottlenecks. The "New Architecture" replaces the asynchronous JSON Bridge with synchronous C++ interfaces.
+
+## 1. The Old Architecture (The Asynchronous Bridge)
+In the legacy architecture, the JavaScript thread and the Native UI thread lived in complete isolation. They could not talk to each other directly.
+
+*   **The Bridge Bottleneck:** Every time a React component rendered a UI element or a user scrolled the screen, the instructions were serialized into a giant JSON string, sent across an asynchronous message queue (the Bridge), and deserialized by the Native thread.
+*   **The Problem:** Because it was asynchronous and batched, high-frequency events (like scrolling a list or tracking a pan gesture 60 times a second) would cause severe traffic jams on the Bridge. The UI thread would be waiting for the JS thread to parse the JSON, resulting in dropped frames, visual tearing, and unresponsiveness (e.g., seeing a "white blank screen" while scrolling fast).
+
+## 2. The New Architecture (JSI - JavaScript Interface)
+The foundation of the New Architecture is the **JSI (JavaScript Interface)**. It completely removes the JSON Bridge.
+
+*   **Synchronous C++ References:** JSI is a lightweight C++ API that allows the JavaScript engine (Hermes) to hold direct references to C++ native objects.
+*   **No More Serialization:** Instead of converting commands to JSON and waiting, JavaScript can now synchronously invoke native methods in real-time, exactly like calling a standard JavaScript function. This allows React to execute native UI updates instantly without any asynchronous delay.
+
+## 3. Fabric (The New UI Renderer)
+Fabric is the new concurrent UI rendering system built on top of JSI.
+
+*   **Old Renderer:** UI updates were queued and sent over the Bridge. React couldn't measure the exact width/height of a native view synchronously, which led to layout jumps.
+*   **Fabric (Synchronous & Concurrent):** Thanks to JSI, React can now synchronously read the exact dimensions of a native UI view and render it immediately. Furthermore, Fabric is designed to fully support **React 18 Concurrent Features** (like \`Suspense\` and \`useTransition\`). This allows React Native to interrupt and pause rendering a heavy list in the background to immediately respond to a high-priority user tap on the UI thread.
+
+## 4. TurboModules (Lazy Loading Native Code)
+Native modules are device APIs written in Swift/Kotlin (e.g., Bluetooth, Camera, File System).
+
+*   **Old Architecture:** When the app launched, React Native had to initialize *every single* native module linked in the app before the JS bundle could even begin to execute. If your app had 50 native modules, the app launch time suffered massively.
+*   **TurboModules:** Powered by JSI, TurboModules are loaded **lazily**. If a user never opens the Camera screen during their session, the Camera native module is never loaded into memory. This drastically reduces app startup time and lowers the overall memory footprint.
+
+## 5. Codegen (Strict Type Safety)
+Because JavaScript and Native C++ are now communicating directly and synchronously via JSI, they must agree on exact data types. If a JS string accidentally gets passed to a C++ function expecting an integer, the app will instantly crash.
+
+*   **Codegen:** This is a build tool that reads your TypeScript (or Flow) definitions and automatically generates the strongly-typed C++ boilerplate required for TurboModules and Fabric components. It guarantees that the JavaScript and Native realms are always perfectly type-safe, eliminating runtime type errors.`,
+    citations: [
+      "https://reactnative.dev/architecture/overview",
+      "https://github.com/reactwg/react-native-new-architecture"
+    ]
+  },
+  {
+    question: "Explain the component lifecycle in React and React Native. Compare the old Class Component lifecycle methods with the modern Functional Component (Hooks) approach, especially regarding React Native.",
+    answer: `The component lifecycle dictates how a component is created, updated, and destroyed. This underlying logic applies equally to both React (Web) and React Native (Mobile). 
+
+There are three main phases in a component's lifecycle: **Mounting** (insertion into the UI), **Updating** (re-rendering upon state/prop changes), and **Unmounting** (removal from the UI).
+
+## 1. The Old Way: Class Components
+Before React 16.8 (2019), local state and lifecycle methods could only be managed using JavaScript classes.
+
+*   **Mounting:**
+    *   \`constructor()\`: Used to initialize \`this.state\` and bind event handlers.
+    *   \`render()\`: The only strictly required method. It returns the JSX UI.
+    *   \`componentDidMount()\`: Fires immediately *after* the component is initially rendered to the screen. This was the standard place to make API calls, set up WebSockets, or initialize Native event listeners in React Native (like hardware Back button listeners or \`AppState\` monitors).
+*   **Updating:**
+    *   \`render()\`: Called again automatically whenever \`this.setState\` is triggered.
+    *   \`componentDidUpdate(prevProps, prevState)\`: Fires after a re-render finishes. Commonly used to fetch new data if a specific prop (like an ID) changed.
+*   **Unmounting:**
+    *   \`componentWillUnmount()\`: Fires right before the component is destroyed. **CRUCIAL in React Native** for cleaning up memory, removing Native event listeners, or clearing timers to prevent severe memory leaks and app crashes.
+
+## 2. The Modern Way: Functional Components & Hooks
+With the introduction of Hooks, functional components became the industry standard. They are lighter, have less boilerplate, and avoid the confusing behavior of the JavaScript \`this\` keyword. The entire lifecycle is now primarily consolidated into a single hook: \`useEffect\`.
+
+The \`useEffect\` hook takes a callback function and an optional dependency array.
+
+*   **Mounting (\`componentDidMount\` equivalent):**
+    Passing an empty dependency array \`[]\` ensures the effect only runs exactly once when the component first mounts.
+    \`\`\`javascript
+    useEffect(() => {
+      // API calls, Native event listeners here
+    }, []); 
+    \`\`\`
+*   **Updating (\`componentDidUpdate\` equivalent):**
+    Passing specific variables in the dependency array means the effect will run on the initial mount AND subsequently whenever those specific variables change.
+    \`\`\`javascript
+    useEffect(() => {
+      // Runs on mount, and whenever 'userId' changes
+    }, [userId]); 
+    \`\`\`
+*   **Unmounting (\`componentWillUnmount\` equivalent):**
+    Returning a cleanup function inside the \`useEffect\` handles unmounting. This is critical in React Native.
+    \`\`\`javascript
+    useEffect(() => {
+      const subscription = AppState.addEventListener('change', handleAppStateChange);
+      
+      // Cleanup function runs right before unmount
+      return () => {
+        subscription.remove();
+      };
+    }, []);
+    \`\`\`
+
+## 3. React Native Specific Lifecycle (App State & Screen Focus)
+While React Native uses the exact same React component lifecycle, mobile apps have additional OS-level and navigation lifecycles that web apps typically don't worry about.
+
+*   **\`AppState\` API:** A mobile app can easily go into the background (e.g., the user receives a phone call, minimizes the app, or pulls down the notification shade). You use the \`AppState\` API to pause heavy tasks (like video playback, camera usage, or precise GPS tracking) when the app goes into the \`background\`, and resume them when it returns to \`active\`.
+*   **Screen Focus (React Navigation):** On the web, moving to a new page destroys the old page. In React Native, when you push a new screen onto the stack navigation, the old screen is *not* unmounted; it simply sits underneath the new one in memory. Therefore, \`useEffect\` cleanup functions will **not** fire when you navigate away. To handle this, routing libraries like React Navigation provide specific hooks like \`useFocusEffect\` to trigger logic when a screen visually comes into focus or goes out of focus.`,
+    citations: [
+      "https://react.dev/reference/react/useEffect",
+      "https://reactnative.dev/docs/appstate",
+      "https://reactnavigation.org/docs/use-focus-effect/"
+    ]
+  },
+  {
+    question: "Explain React Fiber, React Native Fabric, and the complete Virtual DOM rendering lifecycle (Diffing, Reconciliation, Committing, Layout, Painting). How does it differ between Web and Native?",
+    answer: `To thoroughly understand how React draws pixels to a screen, you must understand the strict separation between **React Core** (which calculates *what* changed) and the **Renderer** (which figures out *how* to draw it).
+
+## 1. React Fiber (The Core Calculator)
+**React Fiber** is the core reconciliation algorithm engine introduced in React 16. It is completely platform-agnostic (used by both React Web and React Native). 
+*   **The Virtual DOM:** A lightweight, memory-efficient JavaScript object representing the UI structure. 
+*   **Diffing & Reconciliation:** When state changes, Fiber creates a *new* Virtual DOM tree and compares it to the *old* Virtual DOM tree (the "Diffing" phase). It figures out the absolute minimum number of changes required to update the screen.
+*   **Asynchronous & Interruptible:** Prior to Fiber, rendering blocked the main thread. Fiber breaks rendering work into small units ("fibers"). If a high-priority event occurs (like a user typing on a keyboard), Fiber can pause the background calculation of a heavy list, handle the typing instantly to prevent UI lag, and then resume the list calculation.
+
+## 2. The Complete Rendering Lifecycle
+Regardless of Web or Mobile, React follows these distinct, sequential phases to update the screen:
+
+1.  **Render Phase (Pure & Interruptible):** React calls your component functions (e.g., executing the JSX). It builds the Virtual DOM and runs the Fiber diffing algorithm. **No actual UI changes happen here.** This phase can be paused or aborted by React.
+2.  **Commit Phase (Synchronous & Uninterruptible):** React takes the calculated "diff" and hands it to the **Renderer** (\`react-dom\` for web, or \`react-native\`). The Renderer applies the mutations synchronously to the actual host environment (inserting, updating, or deleting DOM nodes or Native Views).
+3.  **Layout Phase:** The host environment calculates exactly where things should go on the screen geometrically (X, Y coordinates, width, height). On the Web, the browser's internal rendering engine handles this. In React Native, a highly optimized C++ engine called **Yoga** calculates the Flexbox layouts for the native mobile views.
+4.  **Paint Phase:** The host environment (the Browser rendering engine or the Mobile OS UI thread) physically draws the pixels to the screen based on the layout calculations.
+
+## 3. Web Renderer vs. React Native Fabric
+While React Core (Fiber) is identical across platforms, the **Commit Phase** differs drastically depending on the Renderer.
+
+*   **Web (\`react-dom\`):** During the Commit phase, \`react-dom\` takes the Fiber diffs and uses standard Web Browser APIs (like \`document.createElement\`, \`node.appendChild\`, \`element.setAttribute\`) to mutate the actual Browser DOM.
+*   **React Native (Old Architecture):** During the Commit phase, UI update instructions were serialized into JSON, sent across the asynchronous Bridge, and then the Native UI thread parsed them to instantiate iOS \`UIViews\` or Android \`ViewGroups\`. This asynchronous jump caused severe bottlenecks.
+*   **React Native (Fabric):** **Fabric** is React Native's new concurrent rendering system. Because it is built on JSI (C++ synchronous references), Fabric allows the JavaScript thread to synchronously create, mutate, and measure native UI elements directly in C++ during the Commit phase. It entirely skips the JSON Bridge, making mobile rendering perform exactly like web rendering. 
+
+## Summary
+*   **Fiber** = The cross-platform brain (React Core) that computes Virtual DOM diffs and prioritizes work.
+*   **React DOM** = The Web muscle that commits Fiber's diffs to the Browser DOM.
+*   **Fabric** = The modern React Native muscle that synchronously commits Fiber's diffs directly to Native iOS/Android UI views via JSI.`,
+    citations: [
+      "https://github.com/acdlite/react-fiber-architecture",
+      "https://reactnative.dev/architecture/fabric-renderer",
+      "https://react.dev/learn/render-and-commit"
+    ]
+  }
 ];
