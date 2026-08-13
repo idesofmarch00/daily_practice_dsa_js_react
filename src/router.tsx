@@ -9,6 +9,7 @@ import {
 import { CodeBlock } from "./components/CodeBlock";
 import { DayTable } from "./components/DayTable";
 import { TerminalOutput } from "./components/TerminalOutput";
+import { MarkdownRenderer } from "./components/MarkdownRenderer";
 import { days, getDay, getProblem } from "./data/questions";
 import type { ProblemType } from "./types";
 
@@ -63,22 +64,24 @@ function DayPage() {
         <p className="muted">{day.summary}</p>
       </div>
       <div className="problem-grid">
-        {(["dsa", "js", "react"] as ProblemType[]).map((type) => {
-          const problem = day.problems[type];
+        {(["dsa", "js", "react", "interview"] as ProblemType[])
+          .filter((type) => type !== "interview" || day.problems.interview)
+          .map((type) => {
+            const problem = day.problems[type]!;
 
-          return (
-            <Link
-              key={problem.id}
-              className="problem-card"
-              to="/day/$dayId/$problemType"
-              params={{ dayId: day.slug, problemType: type }}
-            >
-              <span>{type.toUpperCase()}</span>
-              <strong>{problem.title}</strong>
-              <small>{problem.prompt}</small>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={problem.id}
+                className="problem-card"
+                to="/day/$dayId/$problemType"
+                params={{ dayId: day.slug, problemType: type }}
+              >
+                <span>{type === "interview" ? "INTERVIEW" : type.toUpperCase()}</span>
+                <strong>{problem.title}</strong>
+                <small>{problem.prompt}</small>
+              </Link>
+            );
+          })}
       </div>
     </section>
   );
@@ -110,14 +113,47 @@ function ProblemPage() {
           <h2>Live Preview</h2>
           <ReactSolution />
         </section>
+      ) : problem.type === "interview" ? (
+        <section className="panel interview-panel">
+          <h2>Questions & Answers</h2>
+          <div className="interview-accordion-list">
+            {problem.questions.map((q, idx) => (
+              <details key={idx} className="explanation-details interview-details">
+                <summary className="explanation-summary interview-summary">
+                  <span>{idx + 1}. {q.question}</span>
+                </summary>
+                <div className="explanation-content interview-content">
+                  <MarkdownRenderer content={q.answer} />
+                  {q.citations && q.citations.length > 0 && (
+                    <div className="citations-section">
+                      <hr className="citations-hr" />
+                      <span className="citations-title">Citations & References:</span>
+                      <ol className="citations-list">
+                        {q.citations.map((cite, cIdx) => (
+                          <li key={cIdx}>
+                            <a href={cite} target="_blank" rel="noopener noreferrer">
+                              {cite}
+                            </a>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
       ) : (
-        problem.type !== "react" && <TerminalOutput problem={problem} />
+        (problem.type === "dsa" || problem.type === "js") && <TerminalOutput problem={problem} />
       )}
 
-      <section className="panel">
-        <h2>Solution Source</h2>
-        <CodeBlock code={problem.source} />
-      </section>
+      {problem.type !== "interview" && (
+        <section className="panel">
+          <h2>Solution Source</h2>
+          <CodeBlock code={problem.source} />
+        </section>
+      )}
 
       {problem.explanation && problem.explanation.length > 0 && (
         <details className="explanation-details">

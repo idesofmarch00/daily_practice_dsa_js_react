@@ -438,3 +438,156 @@ tr:last-child td {
   font-size: 0.95rem;
   color: #3e4a41;
 }
+
+/* Interview Q&A Accordion Layout */
+.interview-accordion-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.interview-details {
+  margin-top: 0;
+  transition: all 0.25s ease-in-out;
+}
+
+.interview-summary {
+  font-size: 1.05rem;
+  padding: 18px 24px;
+}
+
+.interview-content {
+  background: #ffffff;
+  color: #18201c;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Markdown Styles inside Accordion */
+.markdown-renderer p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-renderer p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-renderer h2, 
+.markdown-renderer h3, 
+.markdown-renderer h4 {
+  color: #1d6b43;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.markdown-renderer h2 { font-size: 1.4rem; }
+.markdown-renderer h3 { font-size: 1.2rem; }
+.markdown-renderer h4 { font-size: 1.05rem; }
+
+.markdown-hr {
+  border: 0;
+  border-top: 1px solid #dde3d6;
+  margin: 24px 0;
+}
+
+.markdown-ul, 
+.markdown-ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.markdown-ul li, 
+.markdown-ol li {
+  margin-bottom: 8px;
+}
+
+.markdown-ul li::marker {
+  color: #1d6b43;
+}
+
+/* Citations & Inline styles */
+.inline-code {
+  background: #f0f4f1;
+  color: #1d6b43;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.88em;
+}
+
+.citation-sup {
+  color: #1d6b43;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 2px;
+}
+
+.citations-section {
+  margin-top: 24px;
+  padding-top: 16px;
+}
+
+.citations-hr {
+  border: 0;
+  border-top: 1px dashed #cfe4d5;
+  margin-bottom: 16px;
+}
+
+.citations-title {
+  display: block;
+  font-weight: 800;
+  color: #607064;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.citations-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+}
+
+.citations-list li {
+  margin-bottom: 6px;
+}
+
+.citations-list a {
+  color: #1d6b43;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.citations-list a:hover {
+  color: #103c25;
+}
+
+/* Markdown Table inside Q&A */
+.markdown-table-wrap {
+  margin-bottom: 16px;
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-table th,
+.markdown-table td {
+  border: 1px solid #dde3d6;
+  padding: 12px;
+  text-align: left;
+}
+
+.markdown-table th {
+  background: #f0f4f1;
+  color: #1d6b43;
+  font-weight: 800;
+}
+
+.markdown-table tr:nth-child(even) td {
+  background: #fafbfa;
+}

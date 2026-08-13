@@ -38,6 +38,11 @@ const columns: ColumnDef<DayEntry>[] = [
         <Link to="/day/$dayId/$problemType" params={{ dayId: row.original.slug, problemType: "react" }}>
           React
         </Link>
+        {row.original.problems.interview && (
+          <Link to="/day/$dayId/$problemType" params={{ dayId: row.original.slug, problemType: "interview" }}>
+            Interview
+          </Link>
+        )}
       </div>
     ),
   },

@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-export type ProblemType = "dsa" | "js" | "react";
+export type ProblemType = "dsa" | "js" | "react" | "interview";
 
 export type ProblemMeta = {
   id: string;
@@ -21,7 +21,18 @@ export type ReactProblem = ProblemMeta & {
   Component: ComponentType;
 };
 
-export type Problem = ConsoleProblem | ReactProblem;
+export type InterviewQuestion = {
+  question: string;
+  answer: string;
+  citations?: string[];
+};
+
+export type InterviewProblem = ProblemMeta & {
+  type: "interview";
+  questions: InterviewQuestion[];
+};
+
+export type Problem = ConsoleProblem | ReactProblem | InterviewProblem;
 
 export type DayEntry = {
   day: number;
@@ -32,5 +43,6 @@ export type DayEntry = {
     dsa: ConsoleProblem;
     js: ConsoleProblem;
     react: ReactProblem;
+    interview?: InterviewProblem;
   };
 };

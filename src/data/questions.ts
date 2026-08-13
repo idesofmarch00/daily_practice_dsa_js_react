@@ -4,6 +4,7 @@ import type {
   ProblemMeta,
   ProblemType,
   ReactProblem,
+  InterviewProblem,
 } from "../types";
 
 type ConsoleModule = {
@@ -16,9 +17,15 @@ type ReactModule = {
   Solution: ReactProblem["Component"];
 };
 
+type InterviewModule = {
+  meta: ProblemMeta;
+  questions: { question: string; answer: string; citations?: string[] }[];
+};
+
 const dsaModules = import.meta.glob<ConsoleModule>("../days/day-*/dsa.ts", { eager: true });
 const jsModules = import.meta.glob<ConsoleModule>("../days/day-*/js.ts", { eager: true });
 const reactModules = import.meta.glob<ReactModule>("../days/day-*/react.tsx", { eager: true });
+const interviewModules = import.meta.glob<InterviewModule>("../days/day-*/interview.ts", { eager: true });
 
 const dsaSources = import.meta.glob("../days/day-*/dsa.ts", {
   eager: true,
@@ -69,6 +76,14 @@ function toReactProblem(module: ReactModule, source: string): ReactProblem {
   };
 }
 
+function toInterviewProblem(module: InterviewModule): InterviewProblem {
+  return {
+    ...module.meta,
+    type: "interview",
+    questions: module.questions,
+  };
+}
+
 export const days: DayEntry[] = Object.keys(dsaModules)
   .map(dayNumberFromPath)
   .filter((day) => day > 0)
@@ -78,9 +93,12 @@ export const days: DayEntry[] = Object.keys(dsaModules)
     const dsaPath = `../days/${slug}/dsa.ts`;
     const jsPath = `../days/${slug}/js.ts`;
     const reactPath = `../days/${slug}/react.tsx`;
+    const interviewPath = `../days/${slug}/interview.ts`;
+    
     const dsa = dsaModules[dsaPath];
     const js = jsModules[jsPath];
     const react = reactModules[reactPath];
+    const interview = interviewModules[interviewPath];
 
     if (!dsa || !js || !react) {
       throw new Error(`${slug} must include dsa.ts, js.ts, and react.tsx.`);
@@ -95,6 +113,7 @@ export const days: DayEntry[] = Object.keys(dsaModules)
         dsa: toConsoleProblem(dsa, dsaSources[dsaPath], "dsa"),
         js: toConsoleProblem(js, jsSources[jsPath], "js"),
         react: toReactProblem(react, reactSources[reactPath]),
+        ...(interview ? { interview: toInterviewProblem(interview) } : {}),
       },
     };
   });
@@ -104,7 +123,7 @@ export function getDay(dayId: string) {
 }
 
 export function isProblemType(value: string): value is ProblemType {
-  return value === "dsa" || value === "js" || value === "react";
+  return value === "dsa" || value === "js" || value === "react" || value === "interview";
 }
 
 export function getProblem(dayId: string, problemType: string) {
