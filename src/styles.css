@@ -591,3 +591,220 @@ tr:last-child td {
 .markdown-table tr:nth-child(even) td {
   background: #fafbfa;
 }
+
+/* Habits checklist at the top of the page */
+.habits-panel {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #dde3d6;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 12px 32px rgba(40, 54, 47, 0.05);
+}
+
+.habits-title {
+  margin: 0 0 6px 0;
+  color: #18201c;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.habits-intro {
+  margin: 0 0 16px 0;
+  color: #536157;
+  font-size: 0.95rem;
+}
+
+.habits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.habit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f7f8f4;
+  border: 1px solid #edf0e8;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #18201c;
+  transition: all 0.2s ease;
+}
+
+.habit-item:hover {
+  background: #e8f3ec;
+  border-color: #cfe4d5;
+}
+
+.habit-item.checked {
+  background: #e8f3ec;
+  border-color: #cfe4d5;
+  color: #1a4d32;
+}
+
+.habit-item input[type="checkbox"] {
+  margin-top: 3px;
+  cursor: pointer;
+}
+
+/* Shared Footer Todos UI */
+.footer {
+  margin-top: 60px;
+  border-top: 1px solid #dde3d6;
+  background: #ffffff;
+  padding: 40px 24px 60px;
+}
+
+.shared-todos-footer {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.todos-container {
+  display: grid;
+  gap: 18px;
+}
+
+.todos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.todos-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #18201c;
+}
+
+.todos-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.todos-btn {
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.todos-btn.primary {
+  background: #234b36;
+  color: #ffffff;
+}
+
+.todos-btn.primary:hover {
+  background: #193827;
+}
+
+.todos-btn.secondary {
+  background: #e8f3ec;
+  color: #1d6b43;
+  border-color: #cfe4d5;
+}
+
+.todos-btn.secondary:hover {
+  background: #dfede3;
+}
+
+.todos-btn.danger {
+  background: #fff5f5;
+  color: #e53e3e;
+  border-color: #fed7d7;
+}
+
+.todos-btn.danger:hover {
+  background: #fed7d7;
+}
+
+.todos-add-form {
+  display: flex;
+  gap: 10px;
+}
+
+.todos-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #bfcabb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #ffffff;
+}
+
+.todos-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todos-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f7f8f4;
+  border: 1px solid #edf0e8;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.todos-list li:hover {
+  background: #f2f5ed;
+  border-color: #dde3d6;
+}
+
+.todos-list li.completed {
+  background: #fafbfa;
+  border-color: #edf0e8;
+}
+
+.todos-list li.completed span {
+  text-decoration: line-through;
+  color: #8c9c91;
+}
+
+.todos-list li label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.todos-list li label input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.todos-delete-btn {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.todos-delete-btn:hover {
+  color: #e53e3e;
+  background: #fff5f5;
+}

@@ -43,6 +43,11 @@ const columns: ColumnDef<DayEntry>[] = [
             Interview
           </Link>
         )}
+        {row.original.problems.io && (
+          <Link to="/day/$dayId/$problemType" params={{ dayId: row.original.slug, problemType: "io" }}>
+            I/O
+          </Link>
+        )}
       </div>
     ),
   },

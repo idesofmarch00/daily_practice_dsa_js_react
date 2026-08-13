@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Link,
   Outlet,
@@ -10,6 +11,7 @@ import { CodeBlock } from "./components/CodeBlock";
 import { DayTable } from "./components/DayTable";
 import { TerminalOutput } from "./components/TerminalOutput";
 import { MarkdownRenderer } from "./components/MarkdownRenderer";
+import { SharedTodos } from "./components/SharedTodos";
 import { days, getDay, getProblem } from "./data/questions";
 import type { ProblemType } from "./types";
 
@@ -27,6 +29,9 @@ function RootLayout() {
       <main>
         <Outlet />
       </main>
+      <footer className="footer">
+        <SharedTodos />
+      </footer>
     </div>
   );
 }
@@ -54,6 +59,31 @@ function DayPage() {
     return <NotFound message={`No day found for ${dayId}.`} />;
   }
 
+  // Habits state for this specific day
+  const defaultHabits = [
+    { id: "walk", text: "🚶‍♂️ Walk around, go out, and exercise when taking a break" },
+    { id: "stretch", text: "🧘‍♂️ Stretch or do 5 minutes of house chores between sessions" },
+    { id: "pomodoro", text: "⏱️ Use Pomodoro technique to maintain focus" },
+    { id: "notes", text: "📝 Make active study notes during practice" },
+    { id: "explain", text: "🗣️ Explain concepts out loud or to someone else" },
+    { id: "code", text: "💻 Actually code and build the solution, don't just read it" },
+    { id: "journal", text: "📅 Journal your progress and schedule your timetable" },
+  ];
+
+  const storageKey = `habits-${day.slug}`;
+  const [checkedHabits, setCheckedHabits] = useState<string[]>(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const toggleHabit = (id: string) => {
+    const newChecked = checkedHabits.includes(id)
+      ? checkedHabits.filter((h) => h !== id)
+      : [...checkedHabits, id];
+    setCheckedHabits(newChecked);
+    localStorage.setItem(storageKey, JSON.stringify(newChecked));
+  };
+
   return (
     <section className="page-stack">
       <div>
@@ -63,9 +93,31 @@ function DayPage() {
         <h1>{day.title}</h1>
         <p className="muted">{day.summary}</p>
       </div>
+
+      <div className="panel habits-panel">
+        <h2 className="habits-title">Daily Success & Health Habits</h2>
+        <p className="habits-intro">Take care of your mind and body. Check off your study habits for today:</p>
+        <div className="habits-grid">
+          {defaultHabits.map((habit) => (
+            <label key={habit.id} className={`habit-item ${checkedHabits.includes(habit.id) ? "checked" : ""}`}>
+              <input
+                type="checkbox"
+                checked={checkedHabits.includes(habit.id)}
+                onChange={() => toggleHabit(habit.id)}
+              />
+              <span>{habit.text}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
       <div className="problem-grid">
-        {(["dsa", "js", "react", "interview"] as ProblemType[])
-          .filter((type) => type !== "interview" || day.problems.interview)
+        {(["dsa", "js", "react", "interview", "io"] as ProblemType[])
+          .filter((type) => {
+            if (type === "interview" && !day.problems.interview) return false;
+            if (type === "io" && !day.problems.io) return false;
+            return true;
+          })
           .map((type) => {
             const problem = day.problems[type]!;
 
@@ -76,7 +128,13 @@ function DayPage() {
                 to="/day/$dayId/$problemType"
                 params={{ dayId: day.slug, problemType: type }}
               >
-                <span>{type === "interview" ? "INTERVIEW" : type.toUpperCase()}</span>
+                <span>
+                  {type === "interview"
+                    ? "INTERVIEW"
+                    : type === "io"
+                      ? "I/O QUESTIONS"
+                      : type.toUpperCase()}
+                </span>
                 <strong>{problem.title}</strong>
                 <small>{problem.prompt}</small>
               </Link>
@@ -113,9 +171,9 @@ function ProblemPage() {
           <h2>Live Preview</h2>
           <ReactSolution />
         </section>
-      ) : problem.type === "interview" ? (
+      ) : (problem.type === "interview" || problem.type === "io") ? (
         <section className="panel interview-panel">
-          <h2>Questions & Answers</h2>
+          <h2>{problem.type === "io" ? "Input-Output Questions" : "Questions & Answers"}</h2>
           <div className="interview-accordion-list">
             {problem.questions.map((q, idx) => (
               <details key={idx} className="explanation-details interview-details">
@@ -148,7 +206,7 @@ function ProblemPage() {
         (problem.type === "dsa" || problem.type === "js") && <TerminalOutput problem={problem} />
       )}
 
-      {problem.type !== "interview" && (
+      {problem.type !== "interview" && problem.type !== "io" && (
         <section className="panel">
           <h2>Solution Source</h2>
           <CodeBlock code={problem.source} />

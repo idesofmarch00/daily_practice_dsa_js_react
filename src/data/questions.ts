@@ -5,6 +5,7 @@ import type {
   ProblemType,
   ReactProblem,
   InterviewProblem,
+  IOProblem,
 } from "../types";
 
 type ConsoleModule = {
@@ -22,10 +23,16 @@ type InterviewModule = {
   questions: { question: string; answer: string; citations?: string[] }[];
 };
 
+type IOModule = {
+  meta: ProblemMeta;
+  questions: { question: string; answer: string; citations?: string[] }[];
+};
+
 const dsaModules = import.meta.glob<ConsoleModule>("../days/day-*/dsa.ts", { eager: true });
 const jsModules = import.meta.glob<ConsoleModule>("../days/day-*/js.ts", { eager: true });
 const reactModules = import.meta.glob<ReactModule>("../days/day-*/react.tsx", { eager: true });
 const interviewModules = import.meta.glob<InterviewModule>("../days/day-*/interview.ts", { eager: true });
+const ioModules = import.meta.glob<IOModule>("../days/day-*/io.ts", { eager: true });
 
 const dsaSources = import.meta.glob("../days/day-*/dsa.ts", {
   eager: true,
@@ -84,6 +91,14 @@ function toInterviewProblem(module: InterviewModule): InterviewProblem {
   };
 }
 
+function toIOProblem(module: IOModule): IOProblem {
+  return {
+    ...module.meta,
+    type: "io",
+    questions: module.questions,
+  };
+}
+
 export const days: DayEntry[] = Object.keys(dsaModules)
   .map(dayNumberFromPath)
   .filter((day) => day > 0)
@@ -94,11 +109,13 @@ export const days: DayEntry[] = Object.keys(dsaModules)
     const jsPath = `../days/${slug}/js.ts`;
     const reactPath = `../days/${slug}/react.tsx`;
     const interviewPath = `../days/${slug}/interview.ts`;
+    const ioPath = `../days/${slug}/io.ts`;
     
     const dsa = dsaModules[dsaPath];
     const js = jsModules[jsPath];
     const react = reactModules[reactPath];
     const interview = interviewModules[interviewPath];
+    const io = ioModules[ioPath];
 
     if (!dsa || !js || !react) {
       throw new Error(`${slug} must include dsa.ts, js.ts, and react.tsx.`);
@@ -114,6 +131,7 @@ export const days: DayEntry[] = Object.keys(dsaModules)
         js: toConsoleProblem(js, jsSources[jsPath], "js"),
         react: toReactProblem(react, reactSources[reactPath]),
         ...(interview ? { interview: toInterviewProblem(interview) } : {}),
+        ...(io ? { io: toIOProblem(io) } : {}),
       },
     };
   });
@@ -123,7 +141,13 @@ export function getDay(dayId: string) {
 }
 
 export function isProblemType(value: string): value is ProblemType {
-  return value === "dsa" || value === "js" || value === "react" || value === "interview";
+  return (
+    value === "dsa" ||
+    value === "js" ||
+    value === "react" ||
+    value === "interview" ||
+    value === "io"
+  );
 }
 
 export function getProblem(dayId: string, problemType: string) {

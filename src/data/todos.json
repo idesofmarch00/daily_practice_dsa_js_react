@@ -1,0 +1,7 @@
+[
+  { "id": "default-1", "text": "Walk around, go out and exercise when taking a break", "completed": false },
+  { "id": "default-2", "text": "Stretch or do 5 minutes of house chores", "completed": false },
+  { "id": "default-3", "text": "Use Pomodoro, make notes, and explain to someone", "completed": false },
+  { "id": "default-4", "text": "Actually code and not just read", "completed": false },
+  { "id": "default-5", "text": "Journal your progress and set a timetable", "completed": false }
+]
